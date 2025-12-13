@@ -1,0 +1,77 @@
+{
+  "swift_transaction_details": {
+    "transaction_reference": "HBUK1400091WU64M",
+    "value_date": "2024-10-18",
+    "base_currency": "EUR",
+    "output_currency": "USDT",
+    "base_amount": "922200000.00",
+    "CurrentBalance": "19828518491.82",
+    "converted_amount": "1000587000.00",
+    "AvailableBalance": "1000000000.00",
+    "exchange_rate_applied": "1.085",
+    "currency_conversion_details": {
+      "converted_from_currency": "EUR",
+      "converted_to_currency": "USDT",
+      "conversion_date": "2024-10-18",
+      "conversion_rate": "1.085"
+    },
+    "ordering_customer": {
+      "name": "MATECHPOWER LTD",
+      "address": "1 EAGLE ROAD, PLYMOUTH, UK"
+    }
+  },
+  "blockchain_transaction": {
+    "nonce": "0x2a",
+    "gasPrice": "0x02540be400",
+    "gas": "0x7a120",
+    "to": "0x831097c5dcd69c96d02572edb25d1e9a35e28cbc",
+    "value": "0x0",
+    "data": "0xa9059cbb0000000000000000000000005754284f345afc66a98fbb0a0afe71e0f007b94900000000000000000000000000000000000000000000000000038d7ea4c6800000000000000000000000000000000000000000000000000000000000",
+    "chainId": 1,
+    "number_Block_1": "0x8a5f91",
+    "Block_Balance_1": "1000000000.00"
+  },
+  "signing_details": {
+    "raw_transaction_hex": "0x02f88d0182048e0284b2d05e0083035b6094831097c5dcd69c96d02572edb25d1e9a35e28cbc80a4c01a8c840000000000000000000000000000000000000000000000000000000000000cffc080a0bc90b061bfc93180a81d78c10069cf09e7975750b7984bb9ac0181b09aa07ebba070cb08a6cd692f85533ff248958a7f8995622feba3b4d4c16e7811dfa2c0e922",
+	"signed_by": "0x4911dd86FCAad7722bE5428e88e6bb08a3a1226a"
+  },
+  "additional_details": {
+    "swift_message_reference": "HBUK1400091WU64M",
+    "upload_timestamp": "2024-10-18T11:33:12.260045",
+    "prepared_by": "AS20705",
+    "validated_by": "AS20705",
+    "global_server_details": {
+      "server_id": "AS20705",
+      "server_location": "PLYMOUTH, UK",
+      "server_ip": "193.108.76.160",
+      "software_version": "SWIFT GPI-PRO v3.8.0.4",
+      "accessCode": "HBUK-36537885",
+      "releaseCode": "GBUJQB4A0AY848",
+      "activationCode": "GB-40913-U-98155-008673-79057",
+      "downloadCode": "AF-4175-T-12415-52609-36878",
+      "finalCode": "HBUK-DB3710606770/68685",
+      "finalBlockingCode": "HBUK-CR6645229922852921401",
+      "interbankBlockingCode": "65090:IP/IP:967222",
+      "time_prepared": "2024-10-18T11:48:25.033541",
+      "time_validated": "2024-10-18T12:07:15.186652"
+    },
+    "ethereum_node_details": {
+      "node_ip": "185.90.33.138",
+      "node_client": "Geth/v1.14.6-stable-aadddf3a/linux-amd64/go1.22.4",
+      "network_id": 1,
+      "node_operator": "GethNetOps"
+    },
+    "security_details": {
+      "encryption_algorithm": "RSA-2048",
+      "key_management_service": "Azure Key Vault",
+      "signature_algorithm": "QuantumSecure Sign",
+      "hash_function": "SHA-256",
+      "multisig_parties": [
+        {
+          "party_name": "Matech",
+          "public_key": "0xA49a95A5a9BbD57b8647EcE233C7274Af0a255FE"
+        }
+      ]
+    }
+  }
+}
