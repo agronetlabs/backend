@@ -1,0 +1,12 @@
+[package]
+name = "AgroNet_backend"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+temp = "1.0.0"
+axum = "0.8.7"                     # Web framework that focuses on ergonomics and modularity
+axum-valid = "0.24.0"              # Provides validation extractors for your Axum application, allowing you to validate data usin…
+axum-connect = "0.5.3"             # Connect-Web RPC for Axum
+axum-connect-build = "0.5.3"       # Connect-Web RPC code generator for axum-connect
+axum-prometheus = "0.9.0"

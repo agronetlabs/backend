@@ -1,0 +1,64 @@
+{
+    "connection_info": {
+        "private_server_ip": "185.90.33.138",
+        "dns_server": "161.113.228.37",
+        "connected_as": "g.elhedery@AS20705"
+    },
+    "authorization_info": {
+        "pin": "19919",
+        "ssn": "1009203",
+        "searching": "HBUK1400091WU64M"
+    },
+    "certification_info": {
+        "primary_certification_authority": "DigiCert EV RSA CA G20",
+        "certificate": "MIIH3DCCBsSgAwIBAgIQAgrQSHqTMM2Z4tdH6wfiWjANBgkqhkiG9w0BAQsFADBE\nMQswCQYDVQQGEwJVUzEVMBMGA1UEChMMRGlnaUNlcnQgSW5jMR4wHAYDVQQDExVE\naWdpQ2VydCBFViBSU0EgQ0EgRzIwHhcNMjQwODAxMDAwMDAwWhcNMjUwOTAxMjM1\nOTU5WjCBrzETMBEGCysGAQQBgjc8AgEDEwJHQjEdMBsGA1UEDwwUUHJpdmF0ZSBP\ncmdhbml6YXRpb24xETAPBgNVBAUTCDA5MjMxOTc0MQswCQYDVQQGEwJHQjEPMA0G\nA1UEBxMGTG9uZG9uMS8wLQYDVQQKEyZIU0JDIEdyb3VwIE1hbmFnZW1lbnQgU2Vy\ndmljZXMgTGltaXRlZDEXMBUGA1UEAxMOd3d3LmhzYmMuY28udWswggEiMA0GCSqG\nSIb3DQEBAQUAA4IBDwAwggEKAoIBAQCfXN2g77qyehpdIYJ7AfHQB8TjGeyeGwvg\noDFikPhVuRsM+xP/q+EmTtl+ScH7rk79zC1C8KWktvInIsQT55DRc42i9ghzQsBC\n3WChxEclPOxvIqW7Le3MfIswHRxVGCuZSvn5qoQqEJ/kT3XuFHEn82ne1szVasGr\ncKgcdGutaLip34P7KgRkvpENMwYhdW3mMwx2EP8SnODGtUEVun20w2l557yopElc\nqvAutAcjlXzanqCjCow3vXBcvWBtOhLwbkVHQzVxDxr+V1DAMOXRmPGIxueXqCGG\nXU1VbqlVaTCwsSR3H2ubHprDinQVQ14G4zJYtYKB89CPInK5l10VAgMBAAGjggRc\nMIIEWDAfBgNVHSMEGDAWgBRqTlC/mGidW3sgddRZAXlIZpIyBjAdBgNVHQ4EFgQU\nhsr9tMianRng9BxXGa+z+/Pi5g8wggEdBgNVHREEggEUMIIBEIIOd3d3LmhzYmMu\nY28udWuCC3d3dy5oc2JjLnVrghNwZXJzb25hbC5oc2JjLmNvLnVrghRtb3J0Z2Fn\nZXMuaHNiYy5jby51a4IYd3d3Lm1vcnRnYWdlcy5oc2JjLmNvLnVrghN3d3cuc2Fh\ncy5oc2JjLmNvLnVrgg9zYWFzLmhzYmMuY28udWuCE2luc2lnaHRzLmhzYmMuY28u\ndWuCD3d3dzIuaHNiYy5jby51a4IPd3d3MS5oc2JjLmNvLnVrggpoc2JjLmNvLnVr\nghZtLm1pZ3JhdGlvbi5oc2JjLmNvLnVrghliZXRhLmhvbWVhbmRhd2F5LmhzYmMu\nY29tghBmb3Jtcy5oc2JjLmNvLnVrMEoGA1UdIARDMEEwCwYJYIZIAYb9bAIBMDIG\nBWeBDAEBMCkwJwYIKwYBBQUHAgEWG2h0dHA6Ly93d3cuZGlnaWNlcnQuY29tL0NQ\nUzAOBgNVHQ8BAf8EBAMCBaAwHQYDVR0lBBYwFAYIKwYBBQUHAwEGCCsGAQUFBwMC\nMHUGA1UdHwRuMGwwNKAyoDCGLmh0dHA6Ly9jcmwzLmRpZ2ljZXJ0LmNvbS9EaWdp\nQ2VydEVWUlNBQ0FHMi5jcmwwNKAyoDCGLmh0dHA6Ly9jcmw0LmRpZ2ljZXJ0LmNv\nbS9EaWdpQ2VydEVWUlNBQ0FHMi5jcmwwcwYIKwYBBQUHAQEEZzBlMCQGCCsGAQUF\nBzABhhhodHRwOi8vb2NzcC5kaWdpY2VydC5jb20wPQYIKwYBBQUHMAKGMWh0dHA6\nLy9jYWNlcnRzLmRpZ2ljZXJ0LmNvbS9EaWdpQ2VydEVWUlNBQ0FHMi5jcnQwDAYD\nVR0TAQH/BAIwADCCAX4GCisGAQQB1nkCBAIEggFuBIIBagFoAHYAEvFONL1TckyE\nBhnDjz96E/jntWKHiJxtMAWE6+WGJjoAAAGRDAu2+AAABAMARzBFAiEA9M/UZ3YI\nN72tG4vgZP+kXrLlt1tuHK5Yor+nQOLm7jQCIClJBFPzsgiv+vTRXdmN039NQCKl\n76tzA3/9Xt8wZZgHAHYA5tIxY0B3jMEQQQbXcbnOwdJA9paEhvu6hzId/R43jlAA\nAAGRDAu2yAAABAMARzBFAiEApDs0bR5hWGGAOgIfeGmUs/0+IALlulX/9/GEhqjy\nAUACIDahD5aa0ESXFOiznkGnd3wcL8NiLKmKRkTeWGORh9OoAHYAzPsPaoVxCWX+\nlZtTzumyfCLphVwNl422qX5UwP5MDbAAAAGRDAu2hAAABAMARzBFAiEAnQzlVgK1\nnl7GdKjKJ7ss4n4pE8t8o33lLus0CFUm0TACIEFTvk+eHTRndNt2LOY7noRh30Z8\nFfvQaIr9Jwn/CB//MA0GCSqGSIb3DQEBCwUAA4IBAQAuNZbq5eV4f+El8PR4bnXj\nKmMKJUpAZzQ4fS3mL+t5Aierfu5+1XsHq4TCtyBtS7Mo2rbMhRNXQfRUWhHT+3Zm\nksztL/4nDCZ1AUk1UAnMTQK8rwkvEnwjLCVxTm7nIi99gLx8HHS7Sm9ArvBkpl1I\ngwj4OHU8YqE2XoHeWRzsw3/GFD2JSqV5KgB37SAb6rJme5I7/J6laG0qlvjGs8pw\n5nSVHSn30iWOezks+J7Nxbm5OzEG9szl1mO9zNQseRLdgEpbvU6vrbYhRo5V1fUF\nD6o1drTKPgCE7RC7KMrTyOAB9yYrHm2fJBvMOpIshUZkeLyH/uc4B7O9lAdlylHC"
+    },
+    "financial_info": {
+        "sender_info": {
+            "sender": "HBUKGB4B",
+            "sender_bank": "HSBC UK BANK PLC",
+            "sender_bank_address": "4 OLD TOWN STREET, PLYMOUTH, UK",
+            "sender_account_name": "MATECHPOWER LTD",
+            "sender_account_number": "GB91HBUK40362272831120",
+            "sender_swift_code": "HBUKGB4BXXX"
+        },
+        "total_balance": "19828518491.82",
+        "client_last_transfer": "922200000.00",
+        "depository": "HSBC UK BANK PLC ",
+        "currency": "EUR"
+    },
+    "protocol_info": {
+        "cipher": "UK228439194.250612216.170521366.HBUK.1270049",
+        "session_id": "UK39337.949870.3692906040.HBUK.6225637",
+        "session_terminal_id": "GB:TERMINAL2BC89MB5E",
+        "db_identity_code": "27C GB FR UK TTQ5U",
+        "user_id": "27C UK FR UK 2EQMF 27C",
+        "treasury_agreement": "GB L2L-ERA-BIZ-2T/13162973",
+        "file_no": "7G35QR.3.38.39.5YZ8",
+        "identity_code": "UK94281DB365XX",
+        "interbank_blocking_code": "65090:IP/IP:967222",
+        "sort_code": "74164029S57947SL4956873-UK",
+        "release_code": "GBUJQB4A0AY848",
+        "access_code": "HBUK-36537885",
+        "transaction_code": "3874 7693 FL2222142 HBUK630391198705002",
+        "final_blocking_code": "HBUK-CR6645229922852921401",
+        "final_code": "HBUK-DB3710606770/68685",
+        "transfer_code": "8470:S:GBA2PZPA",
+        "source_transaction_id": "510035HBUKUK00147800641175",
+        "wts_server": "S1533403651",
+        "bonding_key": "90419980642741892328",
+        "user_name": "W7Q7UB3A",
+        "utr_code": "HBUK28680941730660",
+        "terminal_id": "TERMINAL98912615865441",
+        "downloading_code": "AF-4175-T-12415-52609-36878",
+        "receiving_code": "837-0463-1805-095-4316",
+        "activation_code": "GB-40913-U-98155-008673-79057",
+        "bis_transaction": "DUB43498026941919384267 GB91HBUK40362272831120"
+    },
+    "crypto_data": {
+        "contract_address": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+        "currency": "Tether USD (USDT)",
+        "holder": "Tether Treasury",
+        "chain": "ERC20"
+    }
+}

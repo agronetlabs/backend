@@ -1,0 +1,36 @@
+[package]
+name = "AgroNet_backend"
+version = "0.1.0"
+edition = "2024"
+
+[features]
+sqlx-checked = []
+
+[dependencies]
+tokio = { version = "1", features = ["full", "rt-multi-thread"] }
+
+axum = { version = "=0.6.20", features = ["json"] }
+
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+regex = "1"
+chrono = { version = "0.4", features = ["serde"] }
+
+jsonwebtoken = "9"
+
+sled = "0.34"
+dotenvy = "0.15"
+
+reqwest = { version = "0.11", features = ["json", "rustls-tls"] }
+
+tower = "0.4"
+tower-http = { version = "0.4", features = ["cors"] }
+sqlx = { version = "0.7", features = ["runtime-tokio-rustls", "postgres", "rust_decimal", "chrono"] }
+uuid = { version = "1", features = ["v4", "serde"] }
+rust_decimal = { version = "1", features = ["serde"] }
+
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["fmt", "env-filter"] }
+qrc-opensource-rs = "0.3.7"
+ciphers = "0.1.0"

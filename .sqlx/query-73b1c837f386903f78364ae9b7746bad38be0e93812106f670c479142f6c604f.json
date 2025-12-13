@@ -1,0 +1,24 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        SELECT COALESCE(SUM(amount), 0) as \"sum!: Decimal\"\n        FROM onchain_settlement_log\n        WHERE network = $1\n          AND asset = $2\n          AND validation_status = 'approved'\n          AND created_at >= $3::date\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "sum!: Decimal",
+        "type_info": "Numeric"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Text",
+        "Date"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "73b1c837f386903f78364ae9b7746bad38be0e93812106f670c479142f6c604f"
+}
