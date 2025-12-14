@@ -38,3 +38,4 @@ ciphers = "0.1.0"
 # Ledger Flex integration
 hidapi = "2.4"
 hex = "0.4"
+sha2 = "0.10"
