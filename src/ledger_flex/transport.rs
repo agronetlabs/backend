@@ -131,9 +131,11 @@ impl LedgerTransport {
         let mut response = Vec::new();
         let mut expected_len = None;
         let mut seq_idx = 0u16;
+        let mut packet = vec![0u8; PACKET_SIZE];
 
         loop {
-            let mut packet = vec![0u8; PACKET_SIZE];
+            // Clear buffer for reuse
+            packet.fill(0);
             
             // Read with timeout
             let read_len = self
