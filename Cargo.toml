@@ -34,3 +34,10 @@ tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["fmt", "env-filter"] }
 qrc-opensource-rs = "0.3.7"
 ciphers = "0.1.0"
+
+# Ethereum integration
+ethers = { version = "2.0", features = ["legacy", "rustls"] }
+ethers-core = "2.0"
+ethers-providers = "2.0"
+ethers-signers = "2.0"
+ethers-contract = "2.0"
