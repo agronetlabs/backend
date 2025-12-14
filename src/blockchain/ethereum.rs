@@ -245,9 +245,43 @@ pub async fn send_liquidity_transaction_real(
     // Create contract instance
     let contract = IERC20::new(token_address, client.clone());
 
-    // Convert amount to wei (assuming 6 decimals for USDT/USDC)
-    let decimals = 6u32;
-    let amount_wei = U256::from((amount * Decimal::from(10u64.pow(decimals))).to_string().parse::<u64>().unwrap_or(0));
+    // Get token decimals from contract
+    let decimals = contract.decimals().call().await.map_err(|e| {
+        (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            axum::Json(json!({
+                "error": "decimals_fetch_failed",
+                "detail": e.to_string()
+            })),
+        )
+    })? as u32;
+
+    // Convert amount to token's base unit with proper precision
+    let multiplier = Decimal::from(10u64.pow(decimals));
+    let amount_scaled = amount * multiplier;
+    
+    // Convert to U256 safely
+    let amount_str = amount_scaled.to_string();
+    let amount_parts: Vec<&str> = amount_str.split('.').collect();
+    let integer_part = amount_parts.get(0).ok_or_else(|| {
+        (
+            StatusCode::BAD_REQUEST,
+            axum::Json(json!({
+                "error": "invalid_amount",
+                "detail": "Failed to parse amount"
+            })),
+        )
+    })?;
+    
+    let amount_wei = U256::from_dec_str(integer_part).map_err(|e| {
+        (
+            StatusCode::BAD_REQUEST,
+            axum::Json(json!({
+                "error": "invalid_amount",
+                "detail": format!("Failed to convert amount: {}", e)
+            })),
+        )
+    })?;
 
     // Execute transfer
     let tx = contract.transfer(destination_addr, amount_wei);
