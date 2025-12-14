@@ -76,7 +76,6 @@ impl LedgerTransport {
     /// Write APDU command to device
     fn write_apdu(&mut self, command: &[u8]) -> Result<()> {
         let mut packets = Vec::new();
-        let _sequence = self.sequence;
         self.sequence = self.sequence.wrapping_add(1);
 
         let mut offset = 0;
@@ -214,7 +213,6 @@ impl LedgerTransport {
     /// Disconnect from the device
     pub fn disconnect(self) {
         // HidDevice is automatically closed when dropped
-        drop(self.device);
     }
 }
 
