@@ -162,8 +162,25 @@ fn chunk_data(data: &[u8], chunk_size: usize) -> Vec<Vec<u8>> {
     chunks
 }
 
-/// Parse signature from response
-/// Returns (v, r, s)
+/// Parse signature from response data
+/// 
+/// This is a utility function that can be used to parse the raw signature
+/// bytes returned by the Ledger device into its components (v, r, s).
+/// 
+/// # Arguments
+/// * `sig_data` - Raw signature bytes (must be exactly 65 bytes)
+/// 
+/// # Returns
+/// * Tuple of (v, r, s) where:
+///   - v: Recovery ID (1 byte)
+///   - r: First component of signature (32 bytes)
+///   - s: Second component of signature (32 bytes)
+/// 
+/// # Example
+/// ```rust,ignore
+/// let signature = signer.sign_transaction(&tx_data, path)?;
+/// let (v, r, s) = parse_signature(&signature)?;
+/// ```
 pub fn parse_signature(sig_data: &[u8]) -> Result<(u8, [u8; 32], [u8; 32])> {
     if sig_data.len() != 65 {
         return Err(LedgerError::InvalidResponse(format!(

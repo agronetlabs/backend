@@ -5,6 +5,7 @@ use axum::http::StatusCode;
 use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
+use sha2::{Sha256, Digest};
 use std::env;
 use uuid::Uuid;
 
@@ -174,9 +175,12 @@ async fn sign_with_ledger(
         .sign_transaction(tx_payload.as_bytes(), &derivation_path)
         .map_err(|e| format!("Failed to sign transaction: {}", e))?;
 
-    // Generate transaction hash from signature
+    // Generate transaction hash from signature using SHA256
     // In production, this would be the actual Ethereum transaction hash
-    let tx_hash = format!("0x{}", hex::encode(&signature[..32]));
+    let mut hasher = Sha256::new();
+    hasher.update(&signature);
+    let hash_result = hasher.finalize();
+    let tx_hash = format!("0x{}", hex::encode(hash_result));
 
     tracing::info!("Transaction signed with Ledger: {}", tx_hash);
 
