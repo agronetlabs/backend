@@ -41,8 +41,12 @@ impl<M: Middleware> TxBuilder<M> {
         M::Error: 'static,
     {
         let gas_estimate = self.client.estimate_gas(tx, None).await?;
-        // Add 20% buffer to gas estimate
-        let gas_with_buffer = gas_estimate * 120 / 100;
+        // Add configurable buffer to gas estimate (default 20%)
+        let buffer_percent = std::env::var("GAS_ESTIMATE_BUFFER_PERCENT")
+            .ok()
+            .and_then(|s| s.parse::<u64>().ok())
+            .unwrap_or(20);
+        let gas_with_buffer = gas_estimate * (100 + buffer_percent) / 100;
         Ok(gas_with_buffer)
     }
 
@@ -135,7 +139,9 @@ impl<M: Middleware> TxBuilder<M> {
                         max_retries,
                         e
                     );
-                    tokio::time::sleep(tokio::time::Duration::from_secs(2_u64.pow(retries))).await;
+                    // Exponential backoff with max 30 seconds cap
+                    let delay = std::cmp::min(2_u64.pow(retries), 30);
+                    tokio::time::sleep(tokio::time::Duration::from_secs(delay)).await;
                 }
             }
         }
