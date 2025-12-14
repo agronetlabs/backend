@@ -162,10 +162,12 @@ async fn sign_with_ledger(
 
     // Create a simple transaction payload for demonstration
     // In production, this would be a proper RLP-encoded Ethereum transaction
-    let tx_payload = format!(
-        "{{\"from\":\"{}\",\"to\":\"{}\",\"amount\":\"{}\",\"asset\":\"{}\"}}",
-        ledger_address, destination, amount, asset
-    );
+    let tx_payload = json!({
+        "from": ledger_address,
+        "to": destination,
+        "amount": amount.to_string(),
+        "asset": asset
+    }).to_string();
 
     // Sign the transaction data
     let signature = signer
@@ -179,13 +181,4 @@ async fn sign_with_ledger(
     tracing::info!("Transaction signed with Ledger: {}", tx_hash);
 
     Ok(tx_hash)
-}
-
-// Helper function to encode bytes as hex (simple implementation)
-mod hex {
-    pub fn encode(data: &[u8]) -> String {
-        data.iter()
-            .map(|b| format!("{:02x}", b))
-            .collect::<String>()
-    }
 }

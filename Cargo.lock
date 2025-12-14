@@ -10,6 +10,7 @@ dependencies = [
  "chrono",
  "ciphers",
  "dotenvy",
+ "hex",
  "hidapi",
  "jsonwebtoken",
  "qrc-opensource-rs",
