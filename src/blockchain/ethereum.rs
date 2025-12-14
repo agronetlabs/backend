@@ -116,6 +116,9 @@ fn get_ledger_path() -> String {
 }
 
 /// Generate transaction hash - use Ledger if enabled, otherwise mock
+/// 
+/// Note: The pool parameter is kept for future use when we implement
+/// database logging of Ledger-signed transactions
 async fn generate_transaction_hash(
     amount: Decimal,
     asset: &str,

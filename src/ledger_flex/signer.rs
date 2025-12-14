@@ -75,30 +75,7 @@ impl LedgerSigner {
         let mut data = path_data.clone();
         data.extend_from_slice(tx_data);
 
-        // For large transactions, we need to send in chunks
-        let chunks = chunk_data(&data, 150); // Max ~150 bytes per chunk for safety
-        
-        for (i, chunk) in chunks.iter().enumerate() {
-            let p1 = if i == 0 { 0x00 } else { 0x80 }; // First chunk vs continuation
-            let p2 = 0x00;
-            
-            let command = ApduCommand::new(INS_SIGN_TRANSACTION, p1, p2, chunk.to_vec());
-            let response_bytes = self.transport.exchange(&command.to_bytes())?;
-            let response = ApduResponse::from_bytes(&response_bytes)?;
-            
-            // Only the last chunk should return the signature
-            if i == chunks.len() - 1 {
-                response.check_status()?;
-                return Ok(response.data);
-            } else {
-                // Intermediate chunks should return OK status
-                response.check_status()?;
-            }
-        }
-
-        Err(LedgerError::InvalidResponse(
-            "No signature returned".to_string(),
-        ))
+        self.sign_data(&data, INS_SIGN_TRANSACTION)
     }
 
     /// Sign an arbitrary message (EIP-191 personal sign)
@@ -118,21 +95,28 @@ impl LedgerSigner {
         data.extend_from_slice(&msg_len.to_be_bytes());
         data.extend_from_slice(message);
 
-        // Send in chunks if necessary
-        let chunks = chunk_data(&data, 150);
+        self.sign_data(&data, INS_SIGN_MESSAGE)
+    }
+
+    /// Internal helper method to sign data with chunking
+    fn sign_data(&mut self, data: &[u8], instruction: u8) -> Result<Vec<u8>> {
+        // For large data, we need to send in chunks
+        let chunks = chunk_data(data, 150); // Max ~150 bytes per chunk for safety
         
         for (i, chunk) in chunks.iter().enumerate() {
-            let p1 = if i == 0 { 0x00 } else { 0x80 };
+            let p1 = if i == 0 { 0x00 } else { 0x80 }; // First chunk vs continuation
             let p2 = 0x00;
             
-            let command = ApduCommand::new(INS_SIGN_MESSAGE, p1, p2, chunk.to_vec());
+            let command = ApduCommand::new(instruction, p1, p2, chunk.to_vec());
             let response_bytes = self.transport.exchange(&command.to_bytes())?;
             let response = ApduResponse::from_bytes(&response_bytes)?;
             
+            // Only the last chunk should return the signature
             if i == chunks.len() - 1 {
                 response.check_status()?;
                 return Ok(response.data);
             } else {
+                // Intermediate chunks should return OK status
                 response.check_status()?;
             }
         }
