@@ -34,3 +34,6 @@ tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["fmt", "env-filter"] }
 qrc-opensource-rs = "0.3.7"
 ciphers = "0.1.0"
+
+# Ledger Flex integration
+hidapi = "2.4"
