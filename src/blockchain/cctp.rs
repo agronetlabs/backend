@@ -4,7 +4,6 @@ use axum::http::StatusCode;
 use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
-use uuid::Uuid;
 
 #[derive(Serialize, Deserialize)]
 pub struct OnChainResult {
@@ -62,12 +61,8 @@ pub async fn send_liquidity_transaction(
         ));
     }
 
-    let tx_hash = Uuid::new_v4().to_string();
-    let status = "mocked";
-    let validation_status = "approved";
-    let validation_reason = validation.reason.unwrap_or_else(|| "OK".to_string());
-
-    sqlx::query(
+    let validation_reason = "CCTP broadcaster not configured".to_string();
+    let _ = sqlx::query(
         "INSERT INTO onchain_settlement_log (network, asset, amount, destination, audit_hash, token_id, tx_hash, status, validation_status, validation_reason)
          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)",
     )
@@ -77,24 +72,20 @@ pub async fn send_liquidity_transaction(
     .bind(destination)
     .bind(audit_hash)
     .bind(token_id)
-    .bind(&tx_hash)
-    .bind(status)
-    .bind(validation_status)
+    .bind("NOT_CONFIGURED")
+    .bind("not_configured")
+    .bind("approved")
     .bind(&validation_reason)
     .execute(&pool)
-    .await
-    .map_err(|e| {
-        (
-            StatusCode::INTERNAL_SERVER_ERROR,
-            axum::Json(json!({"error": e.to_string()})),
-        )
-    })?;
+    .await;
 
-    Ok(OnChainResult {
-        tx_hash,
-        network: network.to_string(),
-        status: status.to_string(),
-        validation_status: validation_status.to_string(),
-        validation_reason: Some(validation_reason),
-    })
+    Err((
+        StatusCode::NOT_IMPLEMENTED,
+        axum::Json(json!({
+            "status": "error",
+            "error": "cctp_not_configured",
+            "detail": validation_reason,
+            "channel": network
+        })),
+    ))
 }

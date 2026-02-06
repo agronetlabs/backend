@@ -6,12 +6,14 @@ use ethers::types::{transaction::eip2718::TypedTransaction, TransactionRequest};
 use std::sync::Arc;
 
 /// Transaction builder for EIP-1559 transactions
+#[allow(dead_code)]
 pub struct TxBuilder<M: Middleware> {
     client: Arc<M>,
     gas_price_multiplier: f64,
     max_gas_price_gwei: u64,
 }
 
+#[allow(dead_code)]
 impl<M: Middleware> TxBuilder<M> {
     /// Create a new transaction builder
     pub fn new(client: Arc<M>) -> Self {
@@ -154,11 +156,14 @@ mod tests {
 
     #[test]
     fn test_tx_builder_config() {
-        // Test that default values are set correctly
-        std::env::remove_var("GAS_PRICE_MULTIPLIER");
-        std::env::remove_var("MAX_GAS_PRICE_GWEI");
+        // Don't mutate env in tests (it is process-global and can be unsafe in recent Rust).
+        let provider = ethers::providers::Provider::<ethers::providers::Http>::try_from(
+            "http://localhost:8545",
+        )
+        .expect("provider creation should succeed with dummy URL");
 
-        // Note: We can't fully test without a real provider
-        // This just ensures the struct can be created with default values
+        let builder = TxBuilder::new(Arc::new(provider));
+        assert!(builder.gas_price_multiplier > 0.0);
+        assert!(builder.max_gas_price_gwei > 0);
     }
 }

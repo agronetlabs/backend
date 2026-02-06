@@ -16,6 +16,7 @@ pub enum Network {
 
 impl Network {
     /// Get the RPC URL for this network
+    #[allow(dead_code)]
     pub fn rpc_url(&self) -> String {
         match self {
             Network::EthereumMainnet => {
@@ -154,6 +155,7 @@ impl Network {
     }
 
     /// Get ERC8040 contract address for this network
+    #[allow(dead_code)]
     pub fn erc8040_address(&self) -> Address {
         Address::from_str(
             &std::env::var("ERC8040_CONTRACT")

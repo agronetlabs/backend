@@ -5,17 +5,14 @@ use axum::{
 };
 use chrono::Utc;
 use regex::Regex;
-use reqwest::Client;
 use serde::Deserialize;
-use std::{fs, path::PathBuf, sync::Arc};
+use std::{fs, path::PathBuf};
 
 use crate::db::DbPool;
-use crate::settlement::SettlementRequest; // reusa o tipo do seu settlement module
+use crate::settlement::{SettlementRequest, execute_settlement};
 
 #[derive(Clone)]
 pub struct LiquidityState {
-    pub client: Arc<Client>,
-    pub settlement_endpoint: String,
     pub file_path: PathBuf,
     pub max_pull_ratio: f64,
     pub safe_pull_limit: f64,
@@ -31,7 +28,8 @@ struct StableFile {
 #[derive(Deserialize)]
 struct FinancialInfo {
     total_balance: Option<String>, // pode vir como string
-    currency: Option<String>,
+    #[serde(rename = "currency")]
+    _currency: Option<String>,
     // outros campos omitidos
 }
 
@@ -39,18 +37,16 @@ struct FinancialInfo {
 struct CryptoData {
     contract_address: Option<String>,
     currency: Option<String>,
-    chain: Option<String>,
+    #[serde(rename = "chain")]
+    _chain: Option<String>,
 }
 
 /// cria LiquidityState a partir de env vars (safe defaults)
 impl LiquidityState {
-    pub fn from_env(client: Arc<Client>) -> Self {
+    pub fn from_env() -> Self {
         let file = std::env::var("LIQUIDITY_FILE")
             .map(PathBuf::from)
-            .unwrap_or_else(|_| PathBuf::from("/mnt/data/stablecoin-file.txt"));
-
-        let endpoint = std::env::var("SETTLEMENT_ENDPOINT")
-            .unwrap_or_else(|_| "http://127.0.0.1:8080/api/settlement/stable".to_string());
+            .unwrap_or_else(|_| PathBuf::from("/home/agronet/backend/src/Rv-offline.json"));
 
         let max_pull_ratio = std::env::var("MAX_PULL_RATIO")
             .ok()
@@ -63,8 +59,6 @@ impl LiquidityState {
             .unwrap_or(1_000_000.0);
 
         LiquidityState {
-            client: client,
-            settlement_endpoint: endpoint,
             file_path: file,
             max_pull_ratio,
             safe_pull_limit,
@@ -240,61 +234,42 @@ pub async fn liquidity_pull(
         wallet_to: "TREASURY_DEST".to_string(),
     };
 
-    // 7) chamar endpoint interno
-    let resp = state
-        .client
-        .post(&state.settlement_endpoint)
-        .json(&req_body)
-        .send()
-        .await;
+    let settlement = execute_settlement(&req_body);
+    match settlement {
+        Ok(v) => {
+            let audit_hash_opt = v
+                .get("audit_hash")
+                .and_then(|h| h.as_str())
+                .map(|s| s.to_string());
 
-    match resp {
-        Ok(r) => match r.json::<serde_json::Value>().await {
-            Ok(v) => {
-                let audit_hash_opt = v
-                    .get("audit_hash")
-                    .and_then(|h| h.as_str())
-                    .map(|s| s.to_string());
-
-                if let Some(audit_hash) = audit_hash_opt.clone() {
-                    sqlx::query(
-                        "INSERT INTO settlement_liquidity (audit_hash, pulled_amount, stablecoin, token_id)
-                         VALUES ($1, $2, $3, $4)",
-                    )
-                    .bind(audit_hash)
-                    .bind(authorized_amount)
-                    .bind(stablecoin.clone())
-                    .bind(token_id.clone())
-                    .execute(&pool)
-                    .await
-                    .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
-                }
-
-                return Ok(Json(serde_json::json!({
-                    "status":"ok",
-                    "token_id": token_id,
-                    "stablecoin": stablecoin,
-                    "pulled_amount": authorized_amount,
-                    "audit_hash": audit_hash_opt
-                })));
+            if let Some(audit_hash) = audit_hash_opt.clone() {
+                sqlx::query(
+                    "INSERT INTO settlement_liquidity (audit_hash, pulled_amount, stablecoin, token_id)
+                     VALUES ($1, $2, $3, $4)",
+                )
+                .bind(audit_hash)
+                .bind(authorized_amount)
+                .bind(stablecoin.clone())
+                .bind(token_id.clone())
+                .execute(&pool)
+                .await
+                .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
             }
-            Err(_) => {
-                return Ok(Json(serde_json::json!({
-                    "status":"ok",
-                    "token_id": token_id,
-                    "stablecoin": stablecoin,
-                    "pulled_amount": authorized_amount,
-                    "result":"unreadable_response"
-                })));
-            }
-        },
-        Err(e) => {
-            return Ok(Json(serde_json::json!({
-                "status":"error",
-                "error":"request_failed",
-                "detail": format!("{}", e)
-            })));
+
+            Ok(Json(serde_json::json!({
+                "status":"ok",
+                "token_id": token_id,
+                "stablecoin": stablecoin,
+                "pulled_amount": authorized_amount,
+                "audit_hash": audit_hash_opt
+            })))
         }
+        Err((status, detail)) => Ok(Json(serde_json::json!({
+            "status":"error",
+            "error":"settlement_rejected",
+            "http_status": status.as_u16(),
+            "detail": detail
+        }))),
     }
 }
 
@@ -337,56 +312,41 @@ async fn process_liquidity(
         wallet_to: "TREASURY_DEST".to_string(),
     };
 
-    // chamada interna
-    let resp = state
-        .client
-        .post(&state.settlement_endpoint)
-        .json(&req_body)
-        .send()
-        .await;
+    let settlement = execute_settlement(&req_body);
+    match settlement {
+        Ok(v) => {
+            let audit_hash_opt = v
+                .get("audit_hash")
+                .and_then(|h| h.as_str())
+                .map(|s| s.to_string());
 
-    match resp {
-        Ok(r) => match r.json::<serde_json::Value>().await {
-            Ok(v) => {
-                let audit_hash_opt = v
-                    .get("audit_hash")
-                    .and_then(|h| h.as_str())
-                    .map(|s| s.to_string());
-
-                if let Some(audit_hash) = audit_hash_opt.clone() {
-                    sqlx::query(
-                        "INSERT INTO settlement_liquidity (audit_hash, pulled_amount, stablecoin, token_id)
-                         VALUES ($1, $2, $3, $4)",
-                    )
-                    .bind(audit_hash)
-                    .bind(authorized_amount)
-                    .bind(stablecoin.clone())
-                    .bind(token_id.clone())
-                    .execute(pool)
-                    .await
-                    .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
-                }
-
-                Ok(Json(serde_json::json!({
-                    "status": "ok",
-                    "token_id": token_id,
-                    "stablecoin": stablecoin,
-                    "pulled_amount": authorized_amount,
-                    "audit_hash": audit_hash_opt
-                })))
+            if let Some(audit_hash) = audit_hash_opt.clone() {
+                sqlx::query(
+                    "INSERT INTO settlement_liquidity (audit_hash, pulled_amount, stablecoin, token_id)
+                     VALUES ($1, $2, $3, $4)",
+                )
+                .bind(audit_hash)
+                .bind(authorized_amount)
+                .bind(stablecoin.clone())
+                .bind(token_id.clone())
+                .execute(pool)
+                .await
+                .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
             }
-            Err(_) => Ok(Json(serde_json::json!({
-                "status":"ok",
+
+            Ok(Json(serde_json::json!({
+                "status": "ok",
                 "token_id": token_id,
                 "stablecoin": stablecoin,
                 "pulled_amount": authorized_amount,
-                "audit_hash": null
-            }))),
-        },
-        Err(e) => Ok(Json(serde_json::json!({
+                "audit_hash": audit_hash_opt
+            })))
+        }
+        Err((status, detail)) => Ok(Json(serde_json::json!({
             "status":"error",
-            "error":"request_failed",
-            "detail": e.to_string()
+            "error":"settlement_rejected",
+            "http_status": status.as_u16(),
+            "detail": detail
         }))),
     }
 }

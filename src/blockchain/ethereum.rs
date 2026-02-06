@@ -7,7 +7,6 @@ use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
 use sha2::{Sha256, Digest};
 use std::env;
-use uuid::Uuid;
 
 #[derive(Serialize, Deserialize)]
 pub struct OnChainResult {
@@ -72,7 +71,7 @@ pub async fn send_liquidity_transaction(
     }
 
     let tx_hash = generate_transaction_hash(amount, asset, destination, &pool).await?;
-    let status = if is_ledger_enabled() { "signed" } else { "mocked" };
+    let status = "signed";
     let validation_status = "approved";
     let validation_reason = validation.reason.unwrap_or_else(|| "OK".to_string());
 
@@ -374,7 +373,7 @@ fn get_ledger_path() -> String {
     env::var("LEDGER_DERIVATION_PATH").unwrap_or_else(|_| "m/44'/60'/0'/0/0".to_string())
 }
 
-/// Generate transaction hash - use Ledger if enabled, otherwise mock
+/// Generate transaction hash from Ledger signature only.
 /// 
 /// Note: The pool parameter is kept for future use when we implement
 /// database logging of Ledger-signed transactions
@@ -384,20 +383,27 @@ async fn generate_transaction_hash(
     destination: &str,
     _pool: &DbPool,
 ) -> Result<String, (StatusCode, axum::Json<Value>)> {
-    if is_ledger_enabled() {
-        // Attempt to use Ledger for signing
-        match sign_with_ledger(amount, asset, destination).await {
-            Ok(tx_hash) => Ok(tx_hash),
-            Err(e) => {
-                tracing::warn!("Ledger signing failed: {}, falling back to mock", e);
-                // Fallback to mock if Ledger fails
-                Ok(Uuid::new_v4().to_string())
-            }
-        }
-    } else {
-        // Use mock transaction hash
-        Ok(Uuid::new_v4().to_string())
+    if !is_ledger_enabled() {
+        return Err((
+            StatusCode::NOT_IMPLEMENTED,
+            axum::Json(json!({
+                "error": "ledger_not_enabled",
+                "detail": "Set LEDGER_ENABLED=true and connect Ledger for signed settlement."
+            })),
+        ));
     }
+
+    sign_with_ledger(amount, asset, destination)
+        .await
+        .map_err(|e| {
+            (
+                StatusCode::BAD_GATEWAY,
+                axum::Json(json!({
+                    "error": "ledger_signing_failed",
+                    "detail": e
+                })),
+            )
+        })
 }
 
 /// Sign transaction with Ledger hardware wallet

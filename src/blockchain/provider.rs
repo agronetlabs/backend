@@ -1,10 +1,10 @@
 //! Ethereum Provider Configuration
 //! Manages RPC connections to multiple networks
 
-use ethers::providers::{Provider, Http, Middleware, ProviderError};
-use std::sync::Arc;
+use ethers::providers::{Http, Provider, ProviderError};
 
 #[derive(Clone)]
+#[allow(dead_code)]
 pub struct ChainConfig {
     pub rpc_url: String,
     pub chain_id: u64,

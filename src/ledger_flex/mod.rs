@@ -30,9 +30,13 @@
 //! # }
 //! ```
 
+#[allow(dead_code)]
 pub mod commands;
+#[allow(dead_code)]
 pub mod error;
+#[allow(dead_code)]
 pub mod signer;
+#[allow(dead_code)]
 pub mod transport;
 
 // Re-export main types for convenience

@@ -6,7 +6,7 @@ mod liquidity_pull;
 use liquidity_pull::{LiquidityState, liquidity_pull};
 mod settlement;
 use crate::blockchain::{cctp, ethereum, tron};
-use settlement::{SettlementState, settle_stablecoin};
+use settlement::settle_stablecoin;
 
 use axum::{
     Json, Router,
@@ -17,7 +17,6 @@ use axum::{
 };
 use chrono::{Duration, Utc};
 use jsonwebtoken::{DecodingKey, EncodingKey, Header, Validation, decode, encode};
-use reqwest::Client;
 use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
@@ -74,7 +73,13 @@ async fn main() {
     let jwt_secret = env::var("JWT_SECRET").expect("JWT_SECRET not set");
     let sled_db = sled::open("data/db").expect("failed to open sled db");
 
-    let pool = db::connect().await;
+    let pool = match db::connect().await {
+        Ok(p) => p,
+        Err(e) => {
+            tracing::error!(error = %e, "failed to connect to PostgreSQL (check DATABASE_URL)");
+            return;
+        }
+    };
 
     let app_state = Arc::new(AppState {
         db: Arc::new(sled_db),
@@ -86,23 +91,13 @@ async fn main() {
         .allow_methods(Any)
         .allow_headers(Any);
 
-    let client = Arc::new(Client::new());
-
-    let settlement_state = SettlementState {
-        client: client.clone(),
-    };
-
-    let liquidity_state = LiquidityState::from_env(client.clone());
+    let liquidity_state = LiquidityState::from_env();
 
     let liquidity_router = Router::new()
         .route("/api/settlement/pull_liquidity", post(liquidity_pull))
-        .layer(Extension(liquidity_state.clone()))
-        .with_state(pool.clone());
+        .layer(Extension(liquidity_state.clone()));
 
-    let settlement_router = Router::new()
-        .route("/api/settlement/stable", post(settle_stablecoin))
-        .layer(Extension(settlement_state.clone()))
-        .with_state(pool.clone());
+    let settlement_router = Router::new().route("/api/settlement/stable", post(settle_stablecoin));
 
     let app = Router::new()
         .route("/api/auth/register", post(register))
@@ -119,16 +114,31 @@ async fn main() {
                 .layer(cors)
                 .layer(Extension(app_state.clone())),
         )
-        .with_state(pool.clone())
         .merge(liquidity_router)
         .merge(settlement_router);
+    let app = app.with_state(pool);
 
-    let addr = SocketAddr::from(([0, 0, 0, 0], 8080));
+    let bind_ip = env::var("BIND_ADDR").unwrap_or_else(|_| "127.0.0.1".to_string());
+    let port: u16 = env::var("PORT")
+        .ok()
+        .and_then(|p| p.parse().ok())
+        .unwrap_or(8080);
+    let addr: SocketAddr = format!("{bind_ip}:{port}")
+        .parse()
+        .expect("BIND_ADDR/PORT must form a valid socket address");
     tracing::info!("Server running on {}", addr);
 
     use axum::Server;
 
-    Server::bind(&addr)
+    let server = match Server::try_bind(&addr) {
+        Ok(s) => s,
+        Err(e) => {
+            tracing::error!(error = %e, "failed to bind server socket");
+            return;
+        }
+    };
+
+    server
         .serve(app.into_make_service())
         .await
         .unwrap();

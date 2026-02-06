@@ -8,4 +8,5 @@ pub mod erc20;
 pub mod erc8040;
 
 pub use erc20::IERC20;
+#[allow(unused_imports)]
 pub use erc8040::IERC8040;
