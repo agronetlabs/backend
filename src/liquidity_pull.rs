@@ -260,6 +260,7 @@ pub async fn liquidity_pull(
                 "status":"ok",
                 "token_id": token_id,
                 "stablecoin": stablecoin,
+                "balance": total_balance,
                 "pulled_amount": authorized_amount,
                 "audit_hash": audit_hash_opt
             })))
@@ -338,6 +339,7 @@ async fn process_liquidity(
                 "status": "ok",
                 "token_id": token_id,
                 "stablecoin": stablecoin,
+                "balance": balance,
                 "pulled_amount": authorized_amount,
                 "audit_hash": audit_hash_opt
             })))
