@@ -10,7 +10,7 @@ const LEDGER_VENDOR_ID: u16 = 0x2c97;
 const LEDGER_NANO_S: u16 = 0x0001;
 const LEDGER_NANO_X: u16 = 0x0004;
 const LEDGER_NANO_S_PLUS: u16 = 0x0005;
-const LEDGER_FLEX: u16 = 0x0008;
+const LEDGER_FLEX: u16 = 0x7000;
 const LEDGER_STAX: u16 = 0x000a;
 
 /// HID usage page for Ledger
