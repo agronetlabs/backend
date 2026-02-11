@@ -429,19 +429,18 @@ async fn sign_with_ledger(
         ledger_address
     );
 
-    // Create a simple transaction payload for demonstration
-    // In production, this would be a proper RLP-encoded Ethereum transaction
-    let tx_payload = json!({
-        "from": ledger_address,
-        "to": destination,
-        "amount": amount.to_string(),
-        "asset": asset
-    }).to_string();
+    // Build settlement message for Ledger to sign (EIP-191 personal sign)
+    let settlement_msg = format!(
+        "AgroNet Settlement\nTo: {}\nAmount: {} {}\nSigner: {}",
+        destination, amount, asset, ledger_address
+    );
 
-    // Sign the transaction data
+    tracing::info!("Requesting Ledger signature for settlement...");
+
+    // Sign using personal message (EIP-191) — Ledger will show the message on screen
     let signature = signer
-        .sign_transaction(tx_payload.as_bytes(), &derivation_path)
-        .map_err(|e| format!("Failed to sign transaction: {}", e))?;
+        .sign_message(settlement_msg.as_bytes(), &derivation_path)
+        .map_err(|e| format!("Failed to sign with Ledger: {}", e))?;
 
     // Generate transaction hash from signature using SHA256
     // In production, this would be the actual Ethereum transaction hash
