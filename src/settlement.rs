@@ -3,6 +3,7 @@ use axum::{
     extract::State,
     http::StatusCode,
 };
+use rust_decimal::Decimal;
 use sha2::{Digest, Sha256};
 use serde::{Deserialize, Serialize};
 
@@ -12,7 +13,7 @@ use crate::db;
 pub struct SettlementRequest {
     pub token_id: String,
     pub stablecoin: String,
-    pub amount: f64,
+    pub amount: Decimal,
     pub wallet_from: String,
     pub wallet_to: String,
 }
@@ -27,8 +28,8 @@ fn validate_settlement_request(req: &SettlementRequest) -> Result<(), String> {
     if req.wallet_from.trim().is_empty() || req.wallet_to.trim().is_empty() {
         return Err("wallet_from and wallet_to are required".to_string());
     }
-    if !req.amount.is_finite() || req.amount <= 0.0 {
-        return Err("amount must be a positive finite number".to_string());
+    if req.amount <= Decimal::ZERO {
+        return Err("amount must be a positive number".to_string());
     }
     Ok(())
 }

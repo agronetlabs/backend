@@ -5,8 +5,9 @@ use axum::{
 };
 use chrono::Utc;
 use regex::Regex;
+use rust_decimal::Decimal;
 use serde::Deserialize;
-use std::{fs, path::PathBuf};
+use std::{fs, path::PathBuf, str::FromStr};
 
 use crate::db::DbPool;
 use crate::settlement::{SettlementRequest, execute_settlement};
@@ -14,8 +15,8 @@ use crate::settlement::{SettlementRequest, execute_settlement};
 #[derive(Clone)]
 pub struct LiquidityState {
     pub file_path: PathBuf,
-    pub max_pull_ratio: f64,
-    pub safe_pull_limit: f64,
+    pub max_pull_ratio: Decimal,
+    pub safe_pull_limit: Decimal,
 }
 
 #[derive(Deserialize)]
@@ -50,13 +51,13 @@ impl LiquidityState {
 
         let max_pull_ratio = std::env::var("MAX_PULL_RATIO")
             .ok()
-            .and_then(|s| s.parse::<f64>().ok())
-            .unwrap_or(0.7);
+            .and_then(|s| Decimal::from_str(&s).ok())
+            .unwrap_or_else(|| Decimal::from_str("0.7").unwrap());
 
         let safe_pull_limit = std::env::var("SAFE_PULL_LIMIT")
             .ok()
-            .and_then(|s| s.parse::<f64>().ok())
-            .unwrap_or(1_000_000.0);
+            .and_then(|s| Decimal::from_str(&s).ok())
+            .unwrap_or_else(|| Decimal::from(1_000_000));
 
         LiquidityState {
             file_path: file,
@@ -66,8 +67,8 @@ impl LiquidityState {
     }
 }
 
-/// parseia `total_balance` que pode vir em formato string com separadores, devolve Option<f64>
-fn parse_total_balance(s: &str) -> Option<f64> {
+/// parseia `total_balance` que pode vir em formato string com separadores, devolve Option<Decimal>
+fn parse_total_balance(s: &str) -> Option<Decimal> {
     // remove anything que nao seja digito, ponto ou vírgula
     let cleaned: String = s
         .chars()
@@ -77,7 +78,7 @@ fn parse_total_balance(s: &str) -> Option<f64> {
     // troca vírgula por ponto se houver
     let normalized = cleaned.replace(',', ".");
 
-    normalized.parse::<f64>().ok()
+    Decimal::from_str(&normalized).ok()
 }
 
 fn validate_contract_address(addr_opt: &Option<String>) -> bool {
@@ -90,13 +91,13 @@ fn validate_contract_address(addr_opt: &Option<String>) -> bool {
 }
 
 /// Função auxiliar: tenta detectar arquivo SWIFT/GPI + Blockchain
-fn parse_swift_like(json: &serde_json::Value) -> Option<(f64, String, String)> {
+fn parse_swift_like(json: &serde_json::Value) -> Option<(Decimal, String, String)> {
     let swift = json.get("swift_transaction_details")?;
     let chain = json.get("blockchain_transaction")?;
 
     // saldo (CurrentBalance vem como string com vírgula)
     let balance_str = swift.get("CurrentBalance")?.as_str()?;
-    let balance = balance_str.replace(",", "").parse::<f64>().ok()?;
+    let balance = Decimal::from_str(&balance_str.replace(",", "")).ok()?;
 
     // stablecoin (ex: USDT)
     let stablecoin = swift.get("output_currency")?.as_str()?.to_string();
@@ -210,7 +211,7 @@ pub async fn liquidity_pull(
         authorized_amount = state.safe_pull_limit;
     }
 
-    if !(authorized_amount > 0.0) || !authorized_amount.is_finite() {
+    if authorized_amount <= Decimal::ZERO {
         return Ok(Json(serde_json::json!({
             "status":"error",
             "error":"invalid_authorized_amount"
@@ -242,18 +243,41 @@ pub async fn liquidity_pull(
                 .and_then(|h| h.as_str())
                 .map(|s| s.to_string());
 
+            let contract_addr = parsed
+                .crypto_data
+                .as_ref()
+                .and_then(|c| c.contract_address.clone())
+                .unwrap_or_default();
+
             if let Some(audit_hash) = audit_hash_opt.clone() {
                 sqlx::query(
-                    "INSERT INTO settlement_liquidity (audit_hash, pulled_amount, stablecoin, token_id)
-                     VALUES ($1, $2, $3, $4)",
+                    "INSERT INTO settlement_liquidity
+                     (audit_hash, pulled_amount, stablecoin, token_id, source_format, total_balance, max_pull_ratio, safe_pull_limit, contract_address, status)
+                     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)",
                 )
-                .bind(audit_hash)
+                .bind(audit_hash.clone())
                 .bind(authorized_amount)
                 .bind(stablecoin.clone())
                 .bind(token_id.clone())
+                .bind("ERC-8040")
+                .bind(total_balance)
+                .bind(state.max_pull_ratio)
+                .bind(state.safe_pull_limit)
+                .bind(contract_addr.clone())
+                .bind("completed")
                 .execute(&pool)
                 .await
                 .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+
+                // Bridge: credit exchange treasury with pulled amount
+                sqlx::query("SELECT fn_credit_liquidity_pull($1, $2, $3, $4)")
+                    .bind(stablecoin.clone())
+                    .bind(authorized_amount)
+                    .bind(audit_hash)
+                    .bind(token_id.clone())
+                    .execute(&pool)
+                    .await
+                    .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
             }
 
             Ok(Json(serde_json::json!({
@@ -262,7 +286,11 @@ pub async fn liquidity_pull(
                 "stablecoin": stablecoin,
                 "balance": total_balance,
                 "pulled_amount": authorized_amount,
-                "audit_hash": audit_hash_opt
+                "audit_hash": audit_hash_opt,
+                "source_format": "ERC-8040",
+                "max_pull_ratio": state.max_pull_ratio,
+                "safe_pull_limit": state.safe_pull_limit,
+                "contract_address": contract_addr
             })))
         }
         Err((status, detail)) => Ok(Json(serde_json::json!({
@@ -275,7 +303,7 @@ pub async fn liquidity_pull(
 }
 
 async fn process_liquidity(
-    balance: f64,
+    balance: Decimal,
     stablecoin: String,
     contract: String,
     state: LiquidityState,
@@ -295,7 +323,7 @@ async fn process_liquidity(
         authorized_amount = state.safe_pull_limit;
     }
 
-    if !(authorized_amount > 0.0) || !authorized_amount.is_finite() {
+    if !(authorized_amount > Decimal::ZERO) {
         return Ok(Json(
             serde_json::json!({"status":"error","error":"invalid_authorized_amount"}),
         ));
@@ -323,16 +351,33 @@ async fn process_liquidity(
 
             if let Some(audit_hash) = audit_hash_opt.clone() {
                 sqlx::query(
-                    "INSERT INTO settlement_liquidity (audit_hash, pulled_amount, stablecoin, token_id)
-                     VALUES ($1, $2, $3, $4)",
+                    "INSERT INTO settlement_liquidity
+                     (audit_hash, pulled_amount, stablecoin, token_id, source_format, total_balance, max_pull_ratio, safe_pull_limit, contract_address, status)
+                     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)",
                 )
-                .bind(audit_hash)
+                .bind(audit_hash.clone())
                 .bind(authorized_amount)
                 .bind(stablecoin.clone())
                 .bind(token_id.clone())
+                .bind("SWIFT")
+                .bind(balance)
+                .bind(state.max_pull_ratio)
+                .bind(state.safe_pull_limit)
+                .bind(contract.clone())
+                .bind("completed")
                 .execute(pool)
                 .await
                 .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+
+                // Bridge: credit exchange treasury with pulled amount
+                sqlx::query("SELECT fn_credit_liquidity_pull($1, $2, $3, $4)")
+                    .bind(stablecoin.clone())
+                    .bind(authorized_amount)
+                    .bind(audit_hash)
+                    .bind(token_id.clone())
+                    .execute(pool)
+                    .await
+                    .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
             }
 
             Ok(Json(serde_json::json!({
@@ -341,7 +386,11 @@ async fn process_liquidity(
                 "stablecoin": stablecoin,
                 "balance": balance,
                 "pulled_amount": authorized_amount,
-                "audit_hash": audit_hash_opt
+                "audit_hash": audit_hash_opt,
+                "source_format": "SWIFT",
+                "max_pull_ratio": state.max_pull_ratio,
+                "safe_pull_limit": state.safe_pull_limit,
+                "contract_address": contract
             })))
         }
         Err((status, detail)) => Ok(Json(serde_json::json!({

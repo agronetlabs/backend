@@ -109,6 +109,7 @@ async fn main() {
         .route("/api/onchain/settle/tron", post(settle_tron))
         .route("/api/onchain/settle/cctp", post(settle_cctp))
         .route("/api/onchain/settle/ethereum", post(settle_ethereum))
+        .route("/api/exchange/treasury", get(get_treasury_balance))
         .layer(
             ServiceBuilder::new()
                 .layer(cors)
@@ -269,6 +270,26 @@ async fn ai_explain(Json(payload): Json<serde_json::Value>) -> impl IntoResponse
         .unwrap();
 
     Json(resp)
+}
+
+async fn get_treasury_balance(
+    State(pool): State<db::DbPool>,
+) -> Result<Json<serde_json::Value>, (StatusCode, String)> {
+    let rows = sqlx::query_as::<_, (String, rust_decimal::Decimal)>(
+        "SELECT a.asset, a.available_balance FROM accounts a
+         JOIN users u ON u.id = a.user_id
+         WHERE u.email = 'system@treasury.internal' AND a.available_balance > 0"
+    )
+    .fetch_all(&pool)
+    .await
+    .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+
+    let balances: Vec<serde_json::Value> = rows
+        .iter()
+        .map(|(asset, balance)| json!({"asset": asset, "balance": balance}))
+        .collect();
+
+    Ok(Json(json!({ "status": "ok", "treasury": balances })))
 }
 
 async fn settle_tron(
