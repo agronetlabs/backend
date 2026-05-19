@@ -1,4 +1,5 @@
-# AgroNet Backend — Settlement & Liquidity Infrastructure
+﻿[![AI Co-Pilot: OpenClaw](https://img.shields.io/badge/AI%20Co--Pilot-OpenClaw-FF4500?style=for-the-badge&logo=github)](https://openclaw.ai)
+# AgroNet Backend â€” Settlement & Liquidity Infrastructure
 
 > Institutional-grade settlement engine built in Rust. Part of the [ATF-AI](https://github.com/agronetlabs/ATF-AI) ecosystem.
 
@@ -11,13 +12,13 @@
 
 ## What This Is
 
-The AgroNet Backend is the settlement and liquidity engine powering **CEXS.io** — an institutional-grade digital asset exchange built natively on the ATF-AI Autonomous Trust Framework.
+The AgroNet Backend is the settlement and liquidity engine powering **CEXS.io** â€” an institutional-grade digital asset exchange built natively on the ATF-AI Autonomous Trust Framework.
 
-Every settlement operation automatically generates an **ATF-AI audit hash** — a cryptographic proof of provenance embedded in every transaction.
+Every settlement operation automatically generates an **ATF-AI audit hash** â€” a cryptographic proof of provenance embedded in every transaction.
 
 ---
 
-## ✅ Proof of Build
+## âœ… Proof of Build
 
 ### Settlement Running Live
 
@@ -25,7 +26,7 @@ Every settlement operation automatically generates an **ATF-AI audit hash** — 
 
 `POST /api/settlement/pull_liquidity` responding with USDT settlement, ATF-AI audit hash generated automatically.
 
-### 10/10 Tests Passing — Server Running
+### 10/10 Tests Passing â€” Server Running
 
 ![Build Proof](assets/build-proof-tests.jpg)
 
@@ -37,22 +38,22 @@ Clean Rust build, all unit tests passing, server live on port 8080.
 
 ```
 CEXS.io PWA (Frontend)
-        ↓
-AgroNet Backend (This repo — Rust/Axum)
-        ↓
-┌───────────────────────────────────┐
-│  Settlement Layer                 │
-│  ├── TRON (USDT/USDC)            │
-│  ├── Ethereum (ERC-20)            │
-│  └── CCTP (Cross-Chain)          │
-├───────────────────────────────────┤
-│  ATF-AI Compliance Layer          │
-│  └── Audit hash on every tx       │
-├───────────────────────────────────┤
-│  Liquidity Layer                  │
-│  └── Pull liquidity from pools    │
-└───────────────────────────────────┘
-        ↓
+        â†“
+AgroNet Backend (This repo â€” Rust/Axum)
+        â†“
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚  Settlement Layer                 â”‚
+â”‚  â”œâ”€â”€ TRON (USDT/USDC)            â”‚
+â”‚  â”œâ”€â”€ Ethereum (ERC-20)            â”‚
+â”‚  â””â”€â”€ CCTP (Cross-Chain)          â”‚
+â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
+â”‚  ATF-AI Compliance Layer          â”‚
+â”‚  â””â”€â”€ Audit hash on every tx       â”‚
+â”œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
+â”‚  Liquidity Layer                  â”‚
+â”‚  â””â”€â”€ Pull liquidity from pools    â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+        â†“
 PostgreSQL (Double-entry ledger)
 ```
 
@@ -98,29 +99,30 @@ Every settlement generates a cryptographic audit hash:
 ATF-AI-AUDIT-{SHA256(token_id + stablecoin + amount + wallet_from + wallet_to)}
 ```
 
-This hash is traceable back to the full ATF-AI provenance chain — connecting every on-chain settlement to its compliance attestation.
+This hash is traceable back to the full ATF-AI provenance chain â€” connecting every on-chain settlement to its compliance attestation.
 
 ---
 
 ## Tech Stack
 
-- **Rust** + **Axum** — high-performance async HTTP server
-- **PostgreSQL** + **SQLx** — double-entry accounting ledger
-- **Sled** — embedded key-value store for local state
-- **JWT** — stateless authentication
-- **ethers-rs** — Ethereum integration
-- **TRON** — TRON network integration
-- **CCTP** — Circle Cross-Chain Transfer Protocol
+- **Rust** + **Axum** â€” high-performance async HTTP server
+- **PostgreSQL** + **SQLx** â€” double-entry accounting ledger
+- **Sled** â€” embedded key-value store for local state
+- **JWT** â€” stateless authentication
+- **ethers-rs** â€” Ethereum integration
+- **TRON** â€” TRON network integration
+- **CCTP** â€” Circle Cross-Chain Transfer Protocol
 
 ---
 
 ## Related
 
-- [ATF-AI Protocol](https://github.com/agronetlabs/ATF-AI) — Autonomous Trust Framework
-- [ERC-8040 Ecosystem](https://github.com/agronetlabs/erc-8040-ecosystem) — ESG Token Standard
-- [CEXS.io](https://cexs.io) — Institutional Exchange (Q2 2026)
-- [AgroNet Labs](https://agronet.ai) — Company
+- [ATF-AI Protocol](https://github.com/agronetlabs/ATF-AI) â€” Autonomous Trust Framework
+- [ERC-8040 Ecosystem](https://github.com/agronetlabs/erc-8040-ecosystem) â€” ESG Token Standard
+- [CEXS.io](https://cexs.io) â€” Institutional Exchange (Q2 2026)
+- [AgroNet Labs](https://agronet.ai) â€” Company
 
 ---
 
 **AgroNet Labs LLC** | San Francisco | [agronet.ai](https://agronet.ai) | admin@agronet.io
+
